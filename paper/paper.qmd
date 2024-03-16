@@ -1,10 +1,9 @@
 ---
-title: "My title"
+title: "Analysing the Annual Statistical Report on Homicides in Toronto between 2004 to 2020"
 subtitle: "My subtitle if needed"
 author: 
-  - First author
-  - Another author
-thanks: "Code and data are available at: LINK."
+  - Sarah Lee
+thanks: "Code and data are available at: https://github.com/sarahhhh02/murrumbidgee_paper.git."
 date: today
 date-format: long
 abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
@@ -18,10 +17,24 @@ bibliography: references.bib
 #| warning: false
 #| message: false
 
+library(opendatatoronto)
+library(ggplot2)
 library(tidyverse)
-library(palmerpenguins)
+library(dplyr)
+library(knitr)
+
 ```
 
+```{r}
+#### Retrieve Data ####
+homicides_clean1 <- read.csv(here::here("data/analysis_data/homicides_clean1.csv"))
+homicides_clean2 <- read.csv(here::here("data/analysis_data/homicides_clean2.csv"))
+
+
+### Retrieve Model ###
+first_model <- readRDS(here::here("models/first_model.rds"))
+
+```
 
 # Introduction
 
@@ -29,24 +42,56 @@ You can and should cross-reference sections and sub-sections. We use @citeR and 
 
 The remainder of this paper is structured as follows. @sec-data....
 
+```{r}
+#| message: false
+#| echo: false
+#| tbl-cap: Total Homicide Cases per Year
+#| label: tbl-homicidetypecounts
 
+# Assuming 'occurrence_year' is the column containing the year information
+homicides_by_year <- homicides_clean1 |>
+  group_by(year) |>
+  summarise(total = n())
+
+knitr::kable(homicides_by_year,'markdown',col.names = c("Year", "Total Homicides"), align = 'c')
+```
+
+```{r}
+#| message: false
+#| echo: false
+#| tbl-cap: Total Homicide Cases per Year by Homicide Types
+#| label: tbl-homicidetypecountsperyear
+
+homicides_clean2 |>
+  kable(
+    col.names = c("Year", "Homicide Type", "Count"),
+    align = c("l", "r", "r"),
+    digits = 0, booktabs = TRUE, linesep = ""
+  )
+
+```
 
 # Data {#sec-data}
 
 Some of our data is of penguins (@fig-bills), from @palmerpenguins.
 
 ```{r}
-#| label: fig-bills
+#| label: fig-1
 #| fig-cap: Bills of penguins
 #| echo: false
 
-ggplot(penguins, aes(x = island, fill = species)) +
-  geom_bar(alpha = 0.8) +
-  scale_fill_manual(values = c("darkorange","purple","cyan4"),
-                    guide = "none") +
+
+homicides_clean2 |>
+  ggplot(aes(x = year, y = count, color = homicide_type)) +
+  geom_line() +
   theme_minimal() +
-  facet_wrap(~species, ncol = 1) +
-  coord_flip()
+  scale_color_brewer(palette = "Set1") +
+  labs(x = "Year", y = "Annual number of Homicides in Toronto") +
+  facet_wrap(vars(homicide_type), dir = "v", ncol = 1) +
+  theme(legend.position = "none")
+
+
+
 ```
 
 Talk more about it.
@@ -54,25 +99,24 @@ Talk more about it.
 And also planes (@fig-planes). (You can change the height and width, but don't worry about doing that until you have finished every other aspect of the paper - Quarto will try to make it look nice and the defaults usually work well once you have enough text.)
 
 ```{r}
-#| label: fig-planes
-#| fig-cap: Relationship between wing length and width
+#| label: fig-1
+#| fig-cap: Bills of penguins
 #| echo: false
-#| warning: false
-#| message: false
 
-analysis_data <- read_csv(here::here("data/analysis_data/analysis_data.csv"))
+base_plot <- 
+  homicides_clean1|>
+  ggplot(aes(x = year, y = homicides_by_year)) +
+  geom_point(alpha = 1396) +
+  labs(
+    x = "Five-kilometer time (minutes)",
+    y = "Marathon time (minutes)"
+  ) +
+  theme_classic()
 
-analysis_data |> 
-  ggplot(aes(x = width, y = length)) +
-  geom_point(alpha = 0.8) +
-  theme_minimal() +
-  labs(x = "Wing width (mm)",
-       y = "Wing length (mm)")
+base_plot
 ```
 
-Talk way more about it. 
-
-
+Talk way more about it.
 
 # Model
 
@@ -82,8 +126,9 @@ Here we briefly describe the Bayesian analysis model used to investigate... Back
 
 ## Model set-up
 
-Define $y_i$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.  
+Define $y_i$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.
 
+```{=tex}
 \begin{align} 
 y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
 \mu_i &= \alpha + \beta_i + \gamma_i\\
@@ -92,16 +137,14 @@ y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
 \gamma &\sim \mbox{Normal}(0, 2.5) \\
 \sigma &\sim \mbox{Exponential}(1)
 \end{align}
-
+```
 We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use the default priors from `rstanarm`.
-
 
 ### Model justification
 
 We expect a positive relationship between the size of the wings and time spent aloft. In particular...
 
 We can use maths by including latex between dollar signs, for instance $\theta$.
-
 
 # Results
 
@@ -135,14 +178,11 @@ modelsummary::modelsummary(
 )
 ```
 
-
-
-
 # Discussion
 
 ## First discussion point {#sec-first-point}
 
-If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
+If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this.
 
 ## Second discussion point
 
@@ -156,8 +196,7 @@ Weaknesses and next steps should also be included.
 
 \appendix
 
-# Appendix {-}
-
+# Appendix {.unnumbered}
 
 # Additional data details
 
@@ -167,7 +206,7 @@ Weaknesses and next steps should also be included.
 
 In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check. This shows...
 
-In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows... 
+In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows...
 
 ```{r}
 #| eval: true
@@ -211,11 +250,6 @@ plot(first_model, "trace")
 plot(first_model, "rhat")
 ```
 
-
-
 \newpage
 
-
 # References
-
-
