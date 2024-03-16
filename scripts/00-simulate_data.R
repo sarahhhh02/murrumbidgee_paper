@@ -16,7 +16,7 @@ set.seed(123)
 num_rows <- 888
 
 simulated_data <- data.frame(
-  year = sample (2004:2020, num_rows, replace = TRUE),
+  year = sample (2004:2023, num_rows, replace = TRUE),
   month = sample(x = c("January", "Febuary", "March", "April", "May", "June", 
                                             "July", "August", "September", "October", "November",
                                             "December"), num_rows, replace = TRUE),
