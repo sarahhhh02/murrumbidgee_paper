@@ -16,12 +16,17 @@ homicides_raw <- read_csv("data/raw_data/homicides_raw.csv", show_col_types = FA
 
 homicides_raw <- 
   homicides_raw |> 
-  select(OCC_YEAR, OCC_MONTH, OCC_DAY, OCC_DOW, HOMICIDE_TYPE)
+  select(OCC_YEAR, HOMICIDE_TYPE)
 homicides_raw <- 
   homicides_raw |> 
-  rename(year = OCC_YEAR, month = OCC_MONTH, day = OCC_DAY, day_of_week = OCC_DOW) 
+  rename(year = OCC_YEAR) 
 homicides_raw <- clean_names(homicides_raw)
 
+combined_data <- homicides_raw %>%
+  group_by(year, homicide_type) %>%
+  summarize(Count = n())
+
 #### Save data ####
-write_csv(x = homicides_raw, file = "data/analysis_data/homicides_clean.csv")
+write_csv(x = homicides_raw, file = "data/analysis_data/homicides_clean1.csv")
+write_csv(x = combined_data, file = "data/analysis_data/homicides_clean2.csv")
 
