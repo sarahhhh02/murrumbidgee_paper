@@ -2,7 +2,7 @@
 
 ## Overview 
 
-This paper aims to analyze the Annual Statistical Reports on Homicide between 2004 and 2020 collected data from the Open Data Portal of the City of Toronto. Specifically tackling on the homicide trends through visualizing the data through linear models. 
+This paper aims to analyze the Annual Statistical Reports on Homicide between 2004 and 2023 collected data from the Open Data Portal of the City of Toronto. Specifically tackling on the homicide trends through visualizing the data through linear models. 
 
 ## File Structure
 
