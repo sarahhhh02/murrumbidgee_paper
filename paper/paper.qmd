@@ -100,23 +100,99 @@ And also planes (@fig-planes). (You can change the height and width, but don't w
 
 ```{r}
 #| label: fig-1
+#| fig-cap: Homicides Counts per Year from 2004 to 2023
+#| echo: false
+
+base <- 
+  homicides_by_year|>
+  ggplot(aes(x = year, y = total)) +
+  geom_point(alpha = 0.5) +
+  labs(
+    x = "Year",
+    y = "Homicide Count"
+  ) +
+  theme_classic()
+base +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x, alpha = 0.3, linetype = "dashed")
+
+```
+
+```{r}
+#| label: fig-1
+#| fig-cap: Homicides Counts per Year from 2004 to 2023
+#| echo: false
+          
+homicides_clean2 |>
+  ggplot(mapping = aes(x = year, y = count, color = homicide_type)) +
+  geom_point() +
+  theme_minimal() +
+  labs(x = "Year", y = "Homicide Count", color = "Homicide Type") +
+  scale_color_brewer(palette = "Set1") +
+  theme(legend.position = "bottom")
+```
+
+```{r}
+#| label: fig-1
 #| fig-cap: Bills of penguins
 #| echo: false
 
-base_plot <- 
-  homicides_clean1|>
-  ggplot(aes(x = year, y = homicides_by_year)) +
-  geom_point(alpha = 1396) +
+base <- 
+  homicides_clean2 |>
+  ggplot(aes(x = year, y = count, fill = homicide_type )) +
   labs(
-    x = "Five-kilometer time (minutes)",
-    y = "Marathon time (minutes)"
+    x = "Year",
+    y = "Homicide Count",
+    color = "Homicide Type"
   ) +
-  theme_classic()
+  theme_classic() +
+  scale_fill_brewer(palette = "Set1") +
+  theme(legend.position = "bottom")
 
-base_plot
+base +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x, alpha = 0.3, linetype = "dashed")
+
+
 ```
 
-Talk way more about it.
+```{r}
+homicides_clean2 |>
+  ggplot(mapping = aes(x = year, y = count, color = homicide_type)) +
+  geom_point() +
+  geom_smooth(
+    aes(color = "Shooting"),
+    method = "lm",
+    alpha = 0.3,
+    linetype = "dashed",
+    formula = y ~ x
+    )
+  geom_smooth(
+    aes(color = "Stabbing"),
+    method = "lm",
+    alpha = 0.3,
+    linetype = "dashed",
+    formula = y ~ x
+    )
+  theme_minimal() +
+  labs(x = "Year", y = "Homicide Count", color = "Homicide Type") +
+  scale_color_brewer(palette = "Set1") +
+  theme(legend.position = "bottom")
+```
+
+```{r}
+base_plot <- 
+  homicides_clean2 |>
+  ggplot(aes(x = year, y = count, colour = "Shooting")) +
+  geom_point(alpha = 0.5) +
+  labs(
+    x = "Five-kilometer time (minutes)",
+    y = "Marathon time (minutes)",
+    colour = "Homicide Type"
+  ) +
+  theme_classic()
+library(ggplot2)
+```
 
 # Model
 
