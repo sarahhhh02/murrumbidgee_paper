@@ -11,13 +11,11 @@
 library(tidyverse)
 
 #Load package
-homicides_clean <- read_csv("data/analysis_data/homicides_clean.csv")
+homicides_clean2 <- read_csv("data/analysis_data/homicides_clean2.csv")
 
 #### Test data ####
 #Test coloumn class of variables; should all return TRUE
-is.numeric(homicides_clean$year)
-is.character(homicides_clean$month)
-is.numeric(homicides_clean$day)
-is.character(homicides_clean$day_of_week)
-is.character(homicides_clean$homicide_type)
+is.numeric(homicides_clean2$year)
+is.character(homicides_clean2$homicide_type)
+is.numeric(homicides_clean2$count)
 
