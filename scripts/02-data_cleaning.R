@@ -16,7 +16,7 @@ homicides_raw <- read_csv("data/raw_data/homicides_raw.csv", show_col_types = FA
 
 homicides_raw <- 
   homicides_raw |> 
-  select(OCC_YEAR, OCC_MONTH, OCC_DAY, OCC_DOW, HOMICIDE_TYPE, HOOD_158, HOOD_140)
+  select(OCC_YEAR, OCC_MONTH, OCC_DAY, OCC_DOW, HOMICIDE_TYPE)
 homicides_raw <- 
   homicides_raw |> 
   rename(year = OCC_YEAR, month = OCC_MONTH, day = OCC_DAY, day_of_week = OCC_DOW) 
