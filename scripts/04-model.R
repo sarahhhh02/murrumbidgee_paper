@@ -1,5 +1,5 @@
 #### Preamble ####
-# Purpose: Models... [...UPDATE THIS...]
+# Purpose: Creating a model for annual homicides in Toronto
 # Author: Sarah Lee
 # Date: 15 March 2024 
 # Contact: sarahhhh.lee@mail.utoronto.ca
