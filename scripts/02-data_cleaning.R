@@ -14,6 +14,7 @@ library(janitor)
 #### Clean data ####
 homicides_raw <- read_csv("data/raw_data/homicides_raw.csv", show_col_types = FALSE)
 
+#Filter out the coloumns and change coloum names
 homicides_raw <- 
   homicides_raw |> 
   select(OCC_YEAR, HOMICIDE_TYPE)
@@ -22,9 +23,10 @@ homicides_raw <-
   rename(year = OCC_YEAR) 
 homicides_raw <- clean_names(homicides_raw)
 
+#Combining data into year, type of homicide and total homicides
 combined_data <- homicides_raw %>%
   group_by(year, homicide_type) %>%
-  summarize(Count = n())
+  summarize(count = n())
 
 #### Save data ####
 write_csv(x = homicides_raw, file = "data/analysis_data/homicides_clean1.csv")
