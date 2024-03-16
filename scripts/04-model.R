@@ -14,13 +14,24 @@ library(rstanarm)
 
 #### Read data ####
 homicides_clean2 <- read_csv("data/analysis_data/homicides_clean2.csv")
-
+homicides_clean3 <- read_csv("data/analysis_data/homicides_clean3.csv")
 ### Model data ####
 
 first_model <-
   stan_glm(
-    formula = year ~ homicide_type + count,
+    formula = year ~ homicide_type + count_type,
     data = homicides_clean2,
+    family = gaussian(),
+    prior = normal(location = 0, scale = 2.5, autoscale = TRUE),
+    prior_intercept = normal(location = 0, scale = 2.5, autoscale = TRUE),
+    prior_aux = exponential(rate = 1, autoscale = TRUE),
+    seed = 1168
+  )
+
+second_model <-
+  stan_glm(
+    formula = year ~ day + count_day,
+    data = homicides_clean3,
     family = gaussian(),
     prior = normal(location = 0, scale = 2.5, autoscale = TRUE),
     prior_intercept = normal(location = 0, scale = 2.5, autoscale = TRUE),
@@ -35,4 +46,8 @@ saveRDS(
   file = "models/first_model.rds"
 )
 
+saveRDS(
+  second_model,
+  file = "models/second_model.rds"
+)
 
