@@ -1,19 +1,31 @@
 #### Preamble ####
-# Purpose: Simulates... [...UPDATE THIS...]
-# Author: Rohan Alexander [...UPDATE THIS...]
-# Date: 11 February 2023 [...UPDATE THIS...]
-# Contact: rohan.alexander@utoronto.ca [...UPDATE THIS...]
+# Purpose: Simulates the annual homicide statistics in Toronto
+# Author: Sarah Lee
+# Date: 15 March 2024
+# Contact: sarahhhh.lee@mail.utoronto.ca
 # License: MIT
-# Pre-requisites: [...UPDATE THIS...]
-# Any other information needed? [...UPDATE THIS...]
-
 
 #### Workspace setup ####
 library(tidyverse)
 # [...UPDATE THIS...]
 
 #### Simulate data ####
-# [...ADD CODE HERE...]
+set.seed(123)
+
+#gather data for samples: year, month, and day with type of homicide
+num_rows <- 888
+
+simulated_data <- data.frame(
+  year = sample (2004:2020, num_rows, replace = TRUE),
+  month = sample(x = c("January", "Febuary", "March", "April", "May", "June", 
+                                            "July", "August", "September", "October", "November",
+                                            "December"), num_rows, replace = TRUE),
+  day = sample(1:31, num_rows, replace = TRUE),
+  homicide_type = sample (x = c("Stabbing", "Shooting", "Other"), num_rows, replace = TRUE)
+)
+
+print(simulated_data)
+
 
 
 
