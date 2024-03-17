@@ -6,7 +6,7 @@ author:
 thanks: "Code and data are available at: https://github.com/sarahhhh02/murrumbidgee_paper.git."
 date: today
 date-format: long
-abstract: "This paper analysizes the Anuual Statistical Report on Homicides in Toronto between 2004 to 2023 retrieved fromthe OpenDataToronto portal.  On the whole, the most noticable factor is shootings being the most common homicide method."
+abstract: "This paper analysizes the Anuual Statistical Report on Homicides in Toronto between 2004 to 2023 retrieved fromthe OpenDataToronto portal.  On the whole, the most noticable factor is shootings being the most common homicide method. On top of that, it is shown that weekends are the most prominant days of when Homicide rates are high. The Poisson and Negative Binomial Models are used in this paper, where the Negative Binomial Model is a more accurate choice. The results of the model shows us that the data given does not have strong predictive power indicated by the R^2 and R^2 Adj. are very low. Hence there would need further interpretation to understand the relationship between the variables"
 format: pdf
 number-sections: true
 bibliography: references.bib
@@ -52,15 +52,11 @@ Homicide rates serve as a crucial indicator of the public's safety as it reveals
 
 The data is given by a csv. file that includes the categories of location, year, day, month, day of the week, police division, and its unique ID case. The homicide counts are given by the method of homicides, distributed by "shooting", "stabbing", and "other". This paper will mainly focus on the methods of homicides, days of the week, and the years.
 
-With this data set, I plan to use the R programming language [@citeR] with its relevant tools like Tidyverse [@rtidyverse], janitor [@rjanitor], knitr [@rknitr], stanarm [@rstanarm] and dplyr [@rdplyr]. With the use of this language, I will build linear models for the variables homicide type and the day of the week and consider their results.
-
+With this data set, I plan to use the R programming language [@citeR] with its relevant tools like Tidyverse [@rtidyverse], janitor [@rjanitor], knitr [@rknitr], rstanarm [@rstanarm] and dplyr [@rdplyr]. With the use of this language, I will build linear models for the variables homicide type and the day of the week and consider their results.
 
 # Data {#sec-data}
 
-## Cleaned Data
-
-The major trends and patterns will be analyzed using the tool from ggplot2 [@rggplot2] that will graph the needed information. I will also make use of the tool knitr [@rknitr] to construct tables to give a generalized view on what we are looking for in this paper.The original data set that was retrieved from the Open Data Toronto portal [@ropendatatoronto] which includes all cases of homicides from 2004 to 2023. Taking this data set, I cleaned the data into tree separate csv files. The file homicides_clean1 contains the cleaned file of renaming and only taking the columns needed for this paper. @tbl-homicideperyear demonstrates the cleaned data set and shown below @tbl-homicideperyear in @fig-1 is a Simple linear regression visual of the number of homicides per year through 2004 and 2023. 
-
+The major trends and patterns will be analyzed using the tool from ggplot2 [@rggplot2] that will graph the needed information. I will also make use of the tool knitr [@rknitr] to construct tables to give a generalized view on what we are looking for in this paper.The original data set that was retrieved from the Open Data Toronto portal [@ropendatatoronto] which includes all cases of homicides from 2004 to 2023. Taking this data set, I cleaned the data into tree separate csv files. The file homicides_clean1 contains the cleaned file of renaming and only taking the columns needed for this paper. @tbl-homicideperyear demonstrates the cleaned data set and shown below @tbl-homicideperyear in @fig-1 is a linear regression visual of the number of homicides per year through 2004 and 2023.
 
 ```{r}
 #| message: false
@@ -76,7 +72,6 @@ homicides_by_year <- homicides_clean1 |>
 knitr::kable(homicides_by_year,'markdown',col.names = c("Year", "Total Homicides"), align = 'c')
 
 ```
-
 
 ```{r}
 #| label: fig-1
@@ -98,8 +93,7 @@ base +
 
 ```
 
-With the homicides_clean1 data, I combined the year and homicide types to obtain an integer column consisting of the total homicide counts by each homicide type and year, saving this file into homicides_clean2. This new data contains how many counts of homicide there are for each homicide method along with its year. This will give us an overview on which methods of homicides were more predominant in the years. Shown in @fig-2 we are able to see a side to side comparison of the line graph representation of each method of homicides, "shooting", "stabbing", and "other". Just looking at this visualization shows us how much more shooting is the more predominant method.  
-
+With the homicides_clean1 data, I combined the year and homicide types to obtain an integer column consisting of the total homicide counts by each homicide type and year, saving this file into homicides_clean2. This new data contains how many counts of homicide there are for each homicide method along with its year. This will give us an overview on which methods of homicides were more predominant in the years. Shown in @fig-2 we are able to see a side to side comparison of the line graph representation of each method of homicides, "shooting", "stabbing", and "other". Just looking at this visualization shows us how much more shooting is the more predominant method.
 
 ```{r}
 #| label: fig-2
@@ -111,12 +105,12 @@ homicides_clean2 |>
   geom_line() +
   theme_minimal() +
   labs(x = "Year", y = "Homicide Count", color = "Homicide Type") +
+  facet_wrap(vars(homicide_type), dir = "v", ncol = 1) +
   scale_color_brewer(palette = "Set1") +
-  theme(legend.position = "bottom")
+  theme(legend.position = "none")
+
+
 ```
-
-Lastly, in another file, homicides_clean3, I combined the year and day of week to again obtain an integer column to see the total homicide counts by year and day of week. Shown below in @fig-3, you can see that the days that are on average predominate in the higher counts of homicide is during the weekends, "Friday", "Saturday", and "Sunday". But we can also see that the highest number of counts of homicide is actually on a "Monday". Hence with this information, we are not able to fully caputure the essence of a trend or pattern quite yet. 
-
 
 ```{r}
 #| label: fig-3
@@ -132,41 +126,31 @@ homicides_clean3 |>
   scale_fill_brewer(palette = "Set1") +
   theme(legend.position = "bottom")
 
-
 ```
 
+Lastly, in another file, homicides_clean3, I combined the year and day of week to again obtain an integer column to see the total homicide counts by year and day of week. Shown below in @fig-3, you can see that the days that are on average predominate in the higher counts of homicide is during the weekends, "Friday", "Saturday", and "Sunday". But we can also see that the highest number of counts of homicide is actually on a "Monday". Hence with this information, we are not able to fully capture the essence of a trend or pattern quite yet.
 
 # Model
 
-The goal of our modelling strategy is twofold. Firstly,...
+In this data set, the dependent variable is the count of homicides which is a non-negative integer, in this case form the cleaned data sets we have count of homicides by type and day of week. On the other hand, the independent variable is the year which is the linear model that is representing a continuous variable. Based on these two information, the appropriate model for this would be either a Poisson Regression or a Negative Binomial Regression.
 
-Here we briefly describe the Bayesian analysis model used to investigate... Background details and diagnostics are included in [Appendix -@sec-model-details].
+Both the Poisson and Negative Binomial Regressions are used when assumption of the constant variance in linear regression is violated. Poisson Regression specifically assumes the equality of the mean and variance of the dependent variable are equal. While the Negative Binomial Regression on the other hand allows the variance to exceed the mean.
 
 ## Model set-up
 
-Define $y_i$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.
+The Poisson model is given by
 
 ```{=tex}
-\begin{align} 
-y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
-\mu_i &= \alpha + \beta_i + \gamma_i\\
-\alpha &\sim \mbox{Normal}(0, 2.5) \\
-\beta &\sim \mbox{Normal}(0, 2.5) \\
-\gamma &\sim \mbox{Normal}(0, 2.5) \\
-\sigma &\sim \mbox{Exponential}(1)
-\end{align}
-
-
-
-Poisson model:
 \begin{align} 
 y_i|\lambda_i &\sim \mbox{Poisson}(\lambda_i) \\
 log(\lambda_i) & = \beta_0 + \beta_1 \cdot x_i\\
 \beta_0 &\sim \mbox{Normal}(0, 2.5) \\
 \beta_1 &\sim \mbox{Normal}(0, 2.5) \\
 \end{align}
+```
+and the Negative Binomial model is given by
 
-Negative binomial model:
+```{=tex}
 \begin{align} 
 y_i|\lambda_i, \theta &\sim \mbox{NegativeBinomial}(\mu_i, \theta) \\
 log(\mu_i) & = \beta_0 + \beta_1 \cdot x_i\\
@@ -178,7 +162,7 @@ We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use
 
 ### Model justification
 
-It was noted that, among the examples mentioned, the negative binomial regression is more accurate compared to the Poisson model, while Poisson regression is prone to errors.
+The Negative Binomial model is a more accurate representation of the data compared to the Poisson model since Poisson Regression is more prone to errors. If we collect data on the mean and variance from the data plots from earlier. It is shown in @tbl-mean-var-annual, @tbl-mean-var-homicide-type and @tbl-mean-var-day-of-week that all of their variances exceed their means.
 
 ```{r}
 #| label: tbl-mean-var-annual
@@ -188,11 +172,10 @@ It was noted that, among the examples mentioned, the negative binomial regressio
 # Calculate the mean and variance
 summary_stats <- homicides_by_year %>%
   summarise(
-    Mean = mean(total, na.rm = TRUE),  # Calculate mean, remove NA values if any
-    Variance = var(total, na.rm = TRUE) # Calculate variance, remove NA values if any
+    Mean = mean(total, na.rm = TRUE),  
+    Variance = var(total, na.rm = TRUE) 
   )
 
-# Create a table
 kable(summary_stats, caption = "Comparison of Mean and Variance of Total Homicides")
 ```
 
@@ -204,11 +187,10 @@ kable(summary_stats, caption = "Comparison of Mean and Variance of Total Homicid
 # Calculate the mean and variance
 summary_stats <- homicides_clean2 %>%
   summarise(
-    Mean = mean(count_type, na.rm = TRUE),  # Calculate mean, remove NA values if any
-    Variance = var(count_type, na.rm = TRUE) # Calculate variance, remove NA values if any
+    Mean = mean(count_type, na.rm = TRUE),  
+    Variance = var(count_type, na.rm = TRUE) 
   )
 
-# Create a table
 kable(summary_stats, caption = "Comparison of Mean and Variance of Homicides by Type")
 ```
 
@@ -220,40 +202,18 @@ kable(summary_stats, caption = "Comparison of Mean and Variance of Homicides by 
 # Calculate the mean and variance
 summary_stats <- homicides_clean3 %>%
   summarise(
-    Mean = mean(count_day, na.rm = TRUE),  # Calculate mean, remove NA values if any
-    Variance = var(count_day, na.rm = TRUE) # Calculate variance, remove NA values if any
+    Mean = mean(count_day, na.rm = TRUE),  
+    Variance = var(count_day, na.rm = TRUE) 
   )
 
-# Create a table
 kable(summary_stats, caption = "Comparison of Mean and Variance of Homicides by Day of Week")
 ```
 
+Hence based on these comparisons, it is evident that the model used is correct for this data set.
+
 # Results
 
-```{r}
-#| label: fig-4
-#| fig-cap: Simple linear regression with simulated data on the number of homicides per year, depending on the homicide type 
-#| echo: false
-
-base <- 
-  homicides_clean2 |>
-  ggplot(aes(x = year, y = count_type, color = homicide_type )) +
-  labs(
-    x = "Year",
-    y = "Homicide Count",
-    color = "Homicide Type"
-  ) +
-  theme_classic() +
-  scale_fill_brewer(palette = "Set1") +
-  theme(legend.position = "bottom")
-
-base +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y ~ x, alpha = 0.3, linetype = "dashed")
-
-```
-
-Our results are summarized in @tbl-firstmodelresults.
+Our results for the data on homicides per year based on the homicide type are summarized in @tbl-firstmodelresults. The results on homicides per year based on the day of the week are summarized in @tbl-secondmodelresults.
 
 ```{r}
 #| echo: false
@@ -272,8 +232,48 @@ modelsummary::modelsummary(
 ```
 
 ```{r}
+#| echo: false
+#| eval: true
+#| label: tbl-secondmodelresults
+#| tbl-cap: "Explanatory models of Homicides per Year based on the Day of Week"
+#| warning: false
+
+modelsummary::modelsummary(
+  list(
+    "second model" = second_model
+  ),
+  statistic = "mad",
+  fmt = 2
+)
+```
+
+Below are the Linear Regression models respectively related with @tbl-firstmodelresults and @tbl-secondmodelresults.
+
+```{r}
+#| label: fig-4
+#| fig-cap: Linear regression with simulated data on the number of homicides per year, depending on the homicide type 
+#| echo: false
+
+base <- 
+  homicides_clean2 |>
+  ggplot(aes(x = year, y = count_type, color = homicide_type )) +
+  labs(
+    x = "Year",
+    y = "Homicide Count",
+    color = "Homicide Type"
+  ) +
+  theme_classic() +
+  scale_fill_brewer(palette = "Set1") +
+  theme(legend.position = "bottom")
+
+base +
+  geom_point() +
+  geom_smooth(method = "glm", formula = y ~ x, alpha = 0.3, linetype = "dashed")
+```
+
+```{r}
 #| label: fig-5
-#| fig-cap: Simple linear regression with simulated data on the number of homicides per year, depending on the day of week
+#| fig-cap: Linear regression with simulated data on the number of homicides per year, depending on the day of week
 #| echo: false
 
 base <- 
@@ -295,30 +295,9 @@ base +
 
 ```
 
-
-Our results are summarized in @tbl-secondmodelresults.
-
-```{r}
-#| echo: false
-#| eval: true
-#| label: tbl-secondtmodelresults
-#| tbl-cap: "Explanatory models of Homicides per Year based on the Day of Week"
-#| warning: false
-
-modelsummary::modelsummary(
-  list(
-    "second model" = second_model
-  ),
-  statistic = "mad",
-  fmt = 2
-)
-```
-
 # Discussion
 
 ## First discussion point {#sec-first-point}
-
-If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this.
 
 ## Second discussion point
 
@@ -326,23 +305,13 @@ If my paper were 10 pages, then should be be at least 2.5 pages. The discussion 
 
 ## Weaknesses and next steps
 
-Weaknesses and next steps should also be included.
-
 \newpage
 
 \appendix
 
 # Appendix {.unnumbered}
 
-# Additional data details
-
-# Model details {#sec-model-details}
-
 ## Posterior predictive check
-
-In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check. This shows...
-
-In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows...
 
 ```{r}
 #| eval: true
@@ -366,10 +335,6 @@ posterior_vs_prior(first_model) +
 ```
 
 ## Diagnostics
-
-@fig-stanareyouokay-1 is a trace plot. It shows... This suggests...
-
-@fig-stanareyouokay-2 is a Rhat plot. It shows... This suggests...
 
 ```{r}
 #| echo: false
