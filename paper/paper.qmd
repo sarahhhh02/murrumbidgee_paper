@@ -1,12 +1,12 @@
 ---
-title: "Analysing the Annual Statistical Report on Homicides in Toronto between 2004 to 2020"
+title: "Analysing a Linear Model on the Annual Statistical Report on Homicides in Toronto between 2004 to 2023"
 subtitle: "My subtitle if needed"
 author: 
   - Sarah Lee
 thanks: "Code and data are available at: https://github.com/sarahhhh02/murrumbidgee_paper.git."
 date: today
 date-format: long
-abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
+abstract: "This paper analysizes the Anuual Statistical Report on Homicides in Toronto between 2004 to 2023 retrieved fromthe OpenDataToronto portal.  On the whole, the most noticable factor is shootings being the most common homicide method."
 format: pdf
 number-sections: true
 bibliography: references.bib
@@ -20,33 +20,53 @@ bibliography: references.bib
 library(opendatatoronto)
 library(ggplot2)
 library(tidyverse)
+library(janitor)
 library(dplyr)
 library(knitr)
+library(rstanarm)
 
 ```
 
 ```{r}
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+
 #### Retrieve Data ####
 homicides_clean1 <- read.csv(here::here("data/analysis_data/homicides_clean1.csv"))
 homicides_clean2 <- read.csv(here::here("data/analysis_data/homicides_clean2.csv"))
-
+homicides_clean3 <- read.csv(here::here("data/analysis_data/homicides_clean3.csv"))
 
 ### Retrieve Model ###
 first_model <- readRDS(here::here("models/first_model.rds"))
+second_model <- readRDS(here::here("models/second_model.rds"))
+
 
 ```
 
 # Introduction
 
-You can and should cross-reference sections and sub-sections. We use @citeR and @rohan.
+Homicide rates serve as a crucial indicator of the public's safety as it reveals trends and the distribution of the rates throughout the years. Studying statistics on homicide can motivate the act of public safety and regulations based on the given results and history. This paper explores the distribution of homicide rates between 2004 and 2023 in Toronto along with its predominant methods. The data set on the "Police Annual Statistical Report - Homicides" is retrieved from the Open Data Toronto [@ropendatatoronto] portal website given by Toronto Police reports [@citehomicidedata]. This resource provides a detailed overviews of the city's homicide counts distributed across various expenditure categories. This paper explores the homicide population of the leading methods and days of homicides in Toronto over the years between 2003 and 2023. By identifying the methods of homicides, governments can prioritize research on these methods to decrease the use of them, by enacting law regulations as such. Additionally, police officials by foreseeing the potential days of the week homicides are most likely to occur, they can be extra cautious on those days.
 
-The remainder of this paper is structured as follows. @sec-data....
+The data is given by a csv. file that includes the categories of location, year, day, month, day of the week, police division, and its unique ID case. The homicide counts are given by the method of homicides, distributed by "shooting", "stabbing", and "other". This paper will mainly focus on the methods of homicides, days of the week, and the years.
+
+With this data set, I plan to use the R programming language [@citeR] with its relevant tools like Tidyverse [@rtidyverse], janitor [@rjanitor], knitr [@rknitr], stanarm [@rstanarm] and dplyr [@rdplyr]. With the use of this language, I will build linear models for the variables homicide type and the day of the week and consider their results.
+
+
+# Data {#sec-data}
+
+## Cleaned Data
+
+The major trends and patterns will be analyzed using the tool from ggplot2 [@rggplot2] that will graph the needed information. I will also make use of the tool knitr [@rknitr] to construct tables to give a generalized view on what we are looking for in this paper.The original data set that was retrieved from the Open Data Toronto portal [@ropendatatoronto] which includes all cases of homicides from 2004 to 2023. Taking this data set, I cleaned the data into tree separate csv files. The file homicides_clean1 contains the cleaned file of renaming and only taking the columns needed for this paper. @tbl-homicideperyear demonstrates the cleaned data set and shown below @tbl-homicideperyear in @fig-1 is a Simple linear regression visual of the number of homicides per year through 2004 and 2023. 
+
 
 ```{r}
 #| message: false
 #| echo: false
 #| tbl-cap: Total Homicide Cases per Year
-#| label: tbl-homicidetypecounts
+#| label: tbl-homicideperyear
 
 # Assuming 'occurrence_year' is the column containing the year information
 homicides_by_year <- homicides_clean1 |>
@@ -54,49 +74,9 @@ homicides_by_year <- homicides_clean1 |>
   summarise(total = n())
 
 knitr::kable(homicides_by_year,'markdown',col.names = c("Year", "Total Homicides"), align = 'c')
-```
-
-```{r}
-#| message: false
-#| echo: false
-#| tbl-cap: Total Homicide Cases per Year by Homicide Types
-#| label: tbl-homicidetypecountsperyear
-
-homicides_clean2 |>
-  kable(
-    col.names = c("Year", "Homicide Type", "Count"),
-    align = c("l", "r", "r"),
-    digits = 0, booktabs = TRUE, linesep = ""
-  )
 
 ```
 
-# Data {#sec-data}
-
-Some of our data is of penguins (@fig-bills), from @palmerpenguins.
-
-```{r}
-#| label: fig-1
-#| fig-cap: Bills of penguins
-#| echo: false
-
-
-homicides_clean2 |>
-  ggplot(aes(x = year, y = count, color = homicide_type)) +
-  geom_line() +
-  theme_minimal() +
-  scale_color_brewer(palette = "Set1") +
-  labs(x = "Year", y = "Annual number of Homicides in Toronto") +
-  facet_wrap(vars(homicide_type), dir = "v", ncol = 1) +
-  theme(legend.position = "none")
-
-
-
-```
-
-Talk more about it.
-
-And also planes (@fig-planes). (You can change the height and width, but don't worry about doing that until you have finished every other aspect of the paper - Quarto will try to make it look nice and the defaults usually work well once you have enough text.)
 
 ```{r}
 #| label: fig-1
@@ -113,86 +93,48 @@ base <-
   ) +
   theme_classic()
 base +
-  geom_point() +
+  geom_line() +
   geom_smooth(method = "lm", formula = y ~ x, alpha = 0.3, linetype = "dashed")
 
 ```
 
+With the homicides_clean1 data, I combined the year and homicide types to obtain an integer column consisting of the total homicide counts by each homicide type and year, saving this file into homicides_clean2. This new data contains how many counts of homicide there are for each homicide method along with its year. This will give us an overview on which methods of homicides were more predominant in the years. Shown in @fig-2 we are able to see a side to side comparison of the line graph representation of each method of homicides, "shooting", "stabbing", and "other". Just looking at this visualization shows us how much more shooting is the more predominant method.  
+
+
 ```{r}
-#| label: fig-1
-#| fig-cap: Homicides Counts per Year from 2004 to 2023
+#| label: fig-2
+#| fig-cap: Data Plot of Homicides Counts per Year by Homicide Type
 #| echo: false
-          
+
 homicides_clean2 |>
-  ggplot(mapping = aes(x = year, y = count, color = homicide_type)) +
-  geom_point() +
+  ggplot(mapping = aes(x = year, y = count_type, color = homicide_type)) +
+  geom_line() +
   theme_minimal() +
   labs(x = "Year", y = "Homicide Count", color = "Homicide Type") +
   scale_color_brewer(palette = "Set1") +
   theme(legend.position = "bottom")
 ```
 
+Lastly, in another file, homicides_clean3, I combined the year and day of week to again obtain an integer column to see the total homicide counts by year and day of week. Shown below in @fig-3, you can see that the days that are on average predominate in the higher counts of homicide is during the weekends, "Friday", "Saturday", and "Sunday". But we can also see that the highest number of counts of homicide is actually on a "Monday". Hence with this information, we are not able to fully caputure the essence of a trend or pattern quite yet. 
+
+
 ```{r}
-#| label: fig-1
-#| fig-cap: Bills of penguins
+#| label: fig-3
+#| fig-cap: Data Plot of Homicide Counts per Year by Day of Week
 #| echo: false
 
-base <- 
-  homicides_clean2 |>
-  ggplot(aes(x = year, y = count, fill = homicide_type )) +
-  labs(
-    x = "Year",
-    y = "Homicide Count",
-    color = "Homicide Type"
-  ) +
-  theme_classic() +
+
+homicides_clean3 |>
+  ggplot(mapping = aes(x = year, y = count_day, color = day)) +
+  geom_point() + 
+  theme_minimal() +
+  labs(x = "Year", y = "Homicide Count", color = "Day of Week") +
   scale_fill_brewer(palette = "Set1") +
   theme(legend.position = "bottom")
 
-base +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y ~ x, alpha = 0.3, linetype = "dashed")
-
 
 ```
 
-```{r}
-homicides_clean2 |>
-  ggplot(mapping = aes(x = year, y = count, color = homicide_type)) +
-  geom_point() +
-  geom_smooth(
-    aes(color = "Shooting"),
-    method = "lm",
-    alpha = 0.3,
-    linetype = "dashed",
-    formula = y ~ x
-    )
-  geom_smooth(
-    aes(color = "Stabbing"),
-    method = "lm",
-    alpha = 0.3,
-    linetype = "dashed",
-    formula = y ~ x
-    )
-  theme_minimal() +
-  labs(x = "Year", y = "Homicide Count", color = "Homicide Type") +
-  scale_color_brewer(palette = "Set1") +
-  theme(legend.position = "bottom")
-```
-
-```{r}
-base_plot <- 
-  homicides_clean2 |>
-  ggplot(aes(x = year, y = count, colour = "Shooting")) +
-  geom_point(alpha = 0.5) +
-  labs(
-    x = "Five-kilometer time (minutes)",
-    y = "Marathon time (minutes)",
-    colour = "Homicide Type"
-  ) +
-  theme_classic()
-library(ggplot2)
-```
 
 # Model
 
@@ -213,41 +155,159 @@ y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
 \gamma &\sim \mbox{Normal}(0, 2.5) \\
 \sigma &\sim \mbox{Exponential}(1)
 \end{align}
+
+
+
+Poisson model:
+\begin{align} 
+y_i|\lambda_i &\sim \mbox{Poisson}(\lambda_i) \\
+log(\lambda_i) & = \beta_0 + \beta_1 \cdot x_i\\
+\beta_0 &\sim \mbox{Normal}(0, 2.5) \\
+\beta_1 &\sim \mbox{Normal}(0, 2.5) \\
+\end{align}
+
+Negative binomial model:
+\begin{align} 
+y_i|\lambda_i, \theta &\sim \mbox{NegativeBinomial}(\mu_i, \theta) \\
+log(\mu_i) & = \beta_0 + \beta_1 \cdot x_i\\
+\beta_0 &\sim \mbox{Normal}(0, 2.5) \\
+\beta_1 &\sim \mbox{Normal}(0, 2.5) \\
+\end{align}
 ```
 We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use the default priors from `rstanarm`.
 
 ### Model justification
 
-We expect a positive relationship between the size of the wings and time spent aloft. In particular...
-
-We can use maths by including latex between dollar signs, for instance $\theta$.
-
-# Results
-
-Our results are summarized in @tbl-modelresults.
+It was noted that, among the examples mentioned, the negative binomial regression is more accurate compared to the Poisson model, while Poisson regression is prone to errors.
 
 ```{r}
+#| label: tbl-mean-var-annual
+#| tbl-cap: Comparison of Mean and Variance of Total Homicides in from 2004 to 2023
 #| echo: false
-#| eval: true
 #| warning: false
-#| message: false
+# Calculate the mean and variance
+summary_stats <- homicides_by_year %>%
+  summarise(
+    Mean = mean(total, na.rm = TRUE),  # Calculate mean, remove NA values if any
+    Variance = var(total, na.rm = TRUE) # Calculate variance, remove NA values if any
+  )
 
-library(rstanarm)
-
-first_model <-
-  readRDS(file = here::here("models/first_model.rds"))
+# Create a table
+kable(summary_stats, caption = "Comparison of Mean and Variance of Total Homicides")
 ```
 
 ```{r}
+#| label: tbl-mean-var-homicide-type
+#| tbl-cap: Comparison of Mean and Variance of Total Homicides by Type
+#| echo: false
+#| warning: false
+# Calculate the mean and variance
+summary_stats <- homicides_clean2 %>%
+  summarise(
+    Mean = mean(count_type, na.rm = TRUE),  # Calculate mean, remove NA values if any
+    Variance = var(count_type, na.rm = TRUE) # Calculate variance, remove NA values if any
+  )
+
+# Create a table
+kable(summary_stats, caption = "Comparison of Mean and Variance of Homicides by Type")
+```
+
+```{r}
+#| label: tbl-mean-var-day-of-week
+#| tbl-cap: Comparison of Mean and Variance of Total Homicides by Day of Week
+#| echo: false
+#| warning: false
+# Calculate the mean and variance
+summary_stats <- homicides_clean3 %>%
+  summarise(
+    Mean = mean(count_day, na.rm = TRUE),  # Calculate mean, remove NA values if any
+    Variance = var(count_day, na.rm = TRUE) # Calculate variance, remove NA values if any
+  )
+
+# Create a table
+kable(summary_stats, caption = "Comparison of Mean and Variance of Homicides by Day of Week")
+```
+
+# Results
+
+```{r}
+#| label: fig-4
+#| fig-cap: Simple linear regression with simulated data on the number of homicides per year, depending on the homicide type 
+#| echo: false
+
+base <- 
+  homicides_clean2 |>
+  ggplot(aes(x = year, y = count_type, color = homicide_type )) +
+  labs(
+    x = "Year",
+    y = "Homicide Count",
+    color = "Homicide Type"
+  ) +
+  theme_classic() +
+  scale_fill_brewer(palette = "Set1") +
+  theme(legend.position = "bottom")
+
+base +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x, alpha = 0.3, linetype = "dashed")
+
+```
+
+Our results are summarized in @tbl-firstmodelresults.
+
+```{r}
 #| echo: false
 #| eval: true
-#| label: tbl-modelresults
-#| tbl-cap: "Explanatory models of flight time based on wing width and wing length"
+#| label: tbl-firstmodelresults
+#| tbl-cap: "Explanatory models of Homicides per Year based on Homicide Type"
 #| warning: false
 
 modelsummary::modelsummary(
   list(
     "First model" = first_model
+  ),
+  statistic = "mad",
+  fmt = 2
+)
+```
+
+```{r}
+#| label: fig-5
+#| fig-cap: Simple linear regression with simulated data on the number of homicides per year, depending on the day of week
+#| echo: false
+
+base <- 
+  homicides_clean3 |>
+  ggplot(aes(x = year, y = count_day, color = day )) +
+  labs(
+    x = "Year",
+    y = "Homicide Count",
+    color = "Day of Week"
+  ) +
+  theme_classic() +
+  scale_fill_brewer(palette = "Set1") +
+  theme(legend.position = "bottom")
+
+base +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x, alpha = 0.3, linetype = "dashed")
+
+
+```
+
+
+Our results are summarized in @tbl-secondmodelresults.
+
+```{r}
+#| echo: false
+#| eval: true
+#| label: tbl-secondtmodelresults
+#| tbl-cap: "Explanatory models of Homicides per Year based on the Day of Week"
+#| warning: false
+
+modelsummary::modelsummary(
+  list(
+    "second model" = second_model
   ),
   statistic = "mad",
   fmt = 2
